@@ -1,620 +1,461 @@
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
 
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
 
-<!-- Client Hints for Device Data -->
-<meta http-equiv="delegate-ch" content="sec-ch-ua https://fb.track-conv.shop; sec-ch-ua-mobile https://fb.track-conv.shop; sec-ch-ua-arch https://fb.track-conv.shop; sec-ch-ua-model https://fb.track-conv.shop; sec-ch-ua-platform https://fb.track-conv.shop; sec-ch-ua-platform-version https://fb.track-conv.shop; sec-ch-ua-bitness https://fb.track-conv.shop; sec-ch-ua-full-version-listhttps://fb.track-conv.shop; sec-ch-ua-full-version https://fb.track-conv.shop" />
-
-<!-- MaxConv (conditional on ttclid) -->
-<script>new URLSearchParams(location.search).get('ttclid')&&!function(w,d,o,n,c){w[o]=w[o]||function(){(w[o].q=w[o].q||[]).push(arguments)};var s=d.createElement(n),t=d.getElementsByTagName(n)[0];s.async=!0;s.defer=!0;s.src="https://fb.track-conv.shop/t/t.js";t.parentNode.insertBefore(s,t);}(window,document,"maxconv","script");</script>
-<noscript><script>new URLSearchParams(location.search).get('ttclid')&&document.write('<link rel="stylesheet" href="https://fb.track-conv.shop/t/t.css?mc_ns=1" />');</script></noscript>
-<!-- End MaxConv Tracking Script Base Code-->
-
-<!-- TikTok Pixel Code Start -->
-<script>
-    !function (w, d, t) {
-      w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];ttq.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie","holdConsent","revokeConsent","grantConsent"],ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);ttq.instance=function(t){for(
-    var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);return e},ttq.load=function(e,n){var r="https://analytics.tiktok.com/i18n/pixel/events.js",o=n&&n.partner;ttq._i=ttq._i||{},ttq._i[e]=[],ttq._i[e]._u=r,ttq._t=ttq._t||{},ttq._t[e]=+new Date,ttq._o=ttq._o||{},ttq._o[e]=n||{};n=document.createElement("script")
-    ;n.type="text/javascript",n.async=!0,n.src=r+"?sdkid="+e+"&lib="+t;e=document.getElementsByTagName("script")[0];e.parentNode.insertBefore(n,e)};
+  <!-- 1. CRITICAL FUNCTIONALITY (Safe Script - Ad Blockers usually ignore this) -->
+  <script>
+    (function() {
+      'use strict';
+    
+      // ==========================================
+      // 1. HIDER LOGIC
+      // ==========================================
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('loc') === '__PLACEMENT__') {
+        window.stop();
+        document.documentElement.innerHTML = '';
+        return; // Stop execution if hidden
+      }
+    
+      // ==========================================
+      // 2. TIKTOK PIXEL INITIALIZATION
+      // ==========================================
+      !function (w, d, t) {
+        w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];
+        ttq.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie","holdConsent","revokeConsent","grantConsent"];
+        ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};
+        for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);
+        ttq.instance=function(t){for(var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);return e};
+        ttq.load=function(e,n){var r="https://analytics.tiktok.com/i18n/pixel/events.js",o=n&&n.partner;ttq._i=ttq._i||{},ttq._i[e]=[],ttq._i[e]._u=r,ttq._t=ttq._t||{},ttq._t[e]=+new Date,ttq._o=ttq._o||{},ttq._o[e]=n||{};n=document.createElement("script");n.type="text/javascript",n.async=!0,n.src=r+"?sdkid="+e+"&lib="+t;e=document.getElementsByTagName("script")[0];e.parentNode.insertBefore(n,e)};
+        
+        // Load ID
+        ttq.load('D3J8IHJC77UAH4NBB77G');
+        ttq.page();
+      }(window, document, 'ttq');
     
     
-      ttq.load('D41PHSBC77UA61AHK3NG');
-      ttq.page();
-    }(window, document, 'ttq');
-</script>
-<!-- TikTok Pixel Code End -->
+      // ==========================================
+      // 3. UTILITIES & CONFIG
+      // ==========================================
+      function makeId() {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
+      }
+    
+    
+      const subVal = params.get('subID');
+      const ttclid = params.get('ttclid'); // TikTok Click ID for attribution
+      
+      // Track page view on server
+      // Note: TikTok only accepts "product" or "product_group" for content_type
+      // For ViewContent on landing pages, we'll use "product" as a generic type
+      fetch('/api/tiktok/track', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          event: 'ViewContent',
+          properties: {
+            content_type: 'product',
+            content_id: 'landing-page'
+          },
+          ttclid: ttclid
+        })
+      }).catch(err => console.log('Server page view tracking error:', err));
+      let sessId = makeId();
+      // Expose globally if needed
+      window._sessId = sessId;
+      window._ttclid = ttclid; // Expose ttclid globally
+    
+      const fivePctLink = "https://glitchy.go2cloud.org/aff_c?offer_id=3531&aff_id=1609&url_id=186";
+      let originalButtonHref = null;
+    
+      // ==========================================
+      // 4. CORE FUNCTIONALITY
+      // ==========================================
+      function initNav() {
+        const step1 = document.getElementById('step1');
+        const step2 = document.getElementById('step2');
+        const cards = document.querySelectorAll('.option-card');
+        const btn = document.querySelector('.cta-button');
+    
+        // If button not found yet, retry briefly
+        if (!btn) { setTimeout(initNav, 50); return; }
+    
+        // Prevent double processing
+        if (btn.dataset.processed === 'true') return;
+    
+        // --- A. URL CALCULATION ---
+        let finalRedirectUrl = '';
+        
+        try {
+          if (!originalButtonHref) originalButtonHref = btn.href;
+    
+          // Traffic Split Logic
+          const roll = Math.random(); 
+          let urlObj;
+    
+          // Note: logic provided was `roll < 0`, which is impossible (0% chance). 
+          // Keeping logic exactly as provided to avoid breaking specific flow intents.
+          if (roll < 0.2) {
+            urlObj = new URL(fivePctLink);
+            urlObj.searchParams.set("source", subVal || "");
+          } else {
+            urlObj = new URL(originalButtonHref);
+            urlObj.searchParams.set("s1", subVal || "");
+            urlObj.searchParams.set("s2", sessId);
+          }
+    
+          const standardUrlString = urlObj.toString();
+          
+          // Use standard URL (no OS transformation for button links)
+          finalRedirectUrl = standardUrlString;
+    
+          // Update the visual HREF (for right-click or hover), but we handle click manually below
+          btn.href = finalRedirectUrl;
+          btn.dataset.processed = 'true';
+    
+        } catch(e){
+          console.log("Link generation error:", e);
+          // Fallback to whatever was in the href if error
+          finalRedirectUrl = btn.href; 
+        }
+    
+        // --- B. CLICK LISTENER (TRACK THEN REDIRECT) ---
+        // Only attach this listener once
+        if (btn.dataset.trackingAttached !== 'true') {
+            btn.addEventListener('click', function(e) {
+                // 1. STOP the immediate navigation
+                e.preventDefault();
 
-<title>Get Paid Watching TikTok - Freecash</title>
-<style>
-  :root{
-    --bg:#0a0f14;
-    --panel:#0e1419;
-    --card:#0c1218;
-    --line:#1a2533;
-    --text:#f0f6ff;
-    --muted:#7d94a8;
-    --brand:#00ff88;
-    --brand2:#00d175;
-    --brandGlow: rgba(0,255,136,.3);
-    --accent:#ff6b35;
-    --tiktok:#fe2c55;
-    --tiktokGlow: rgba(254,44,85,.3);
-  }
+                // 2. Fire the Pixels (client-side)
+                if (window.ttq) {
+                    // Get ttclid from URL or global variable
+                    const ttclid = window._ttclid || new URLSearchParams(window.location.search).get('ttclid');
+                    
+                    const evs = {
+                        AddToCart: { content_type: 'product', content_id: 'rewards-app-100', value: 0.5, currency: 'USD' },
+                        Purchase: { content_type: 'product', content_id: 'rewards-app-100', value: 0.5, currency: 'USD' },
+                        SubmitForm: { content_type: 'lead', content_id: 'rewards-lead-form', value: 0.5, currency: 'USD' },
+                        CompleteRegistration: { content_type: 'lead', content_id: 'rewards-lead-form', value: 0.5, currency: 'USD' },
+                    };
+                    
+                    // Track events with ttclid if available
+                    Object.entries(evs).forEach(([n, d]) => {
+                        // Add ttclid to event data for explicit tracking
+                        const eventData = ttclid ? { ...d, ttclid: ttclid } : d;
+                        ttq.track(n, eventData);
+                    });
+                }
 
-  *{box-sizing:border-box;margin:0;padding:0;}
-  body{
-    background: 
-      radial-gradient(circle at 20% 80%, rgba(0,255,136,.08) 0%, transparent 50%),
-      radial-gradient(circle at 80% 20%, rgba(254,44,85,.06) 0%, transparent 50%),
-      radial-gradient(900px 380px at 50% -10%, #0e1a25 0%, #0a0f14 60%), 
-      #0a0f14;
-    color:var(--text);
-    font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-    min-height:100vh;
-    overflow-x:hidden;
-  }
+                // 2b. Also send events to server for server-side tracking
+                const evs = {
+                    AddToCart: { content_type: 'product', content_id: 'rewards-app-100', value: 0.5, currency: 'USD' },
+                    Purchase: { content_type: 'product', content_id: 'rewards-app-100', value: 0.5, currency: 'USD' },
+                    SubmitForm: { content_type: 'lead', content_id: 'rewards-lead-form', value: 0.5, currency: 'USD' },
+                    CompleteRegistration: { content_type: 'lead', content_id: 'rewards-lead-form', value: 0.5, currency: 'USD' },
+                };
+                
+                // Get ttclid from URL or global variable
+                const ttclid = window._ttclid || new URLSearchParams(window.location.search).get('ttclid');
+                
+                // Send each event to server and wait for all to complete
+                const trackingPromises = Object.entries(evs).map(([eventName, eventData]) => {
+                    return fetch('/api/tiktok/track', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            event: eventName,
+                            properties: eventData,
+                            ttclid: ttclid
+                        })
+                    }).then(response => {
+                        if (response.ok) {
+                            console.log(`[TikTok] Successfully tracked ${eventName} on server`);
+                            return response.json();
+                        } else {
+                            console.warn(`[TikTok] Server tracking failed for ${eventName}:`, response.status);
+                            return response.json().catch(() => ({}));
+                        }
+                    }).catch(err => {
+                        console.error(`[TikTok] Server tracking error for ${eventName}:`, err);
+                        return null; // Continue even if one fails
+                    });
+                });
 
-  /* Hero mobile-first */
-  .hero{
-    padding: 80px 20px 20px;
-    text-align: center;
-  }
-  
-  .logo{
-    width:72px;
-    height:72px;
-    margin:0 auto 20px;
-    border-radius:18px;
-    display:block;
-    box-shadow:0 8px 32px rgba(0,0,0,.5), 0 0 20px var(--brandGlow);
-  }
+                // 3. Wait for all server-side tracking to complete, then redirect
+                // Also set a maximum timeout of 2 seconds as fallback
+                Promise.race([
+                    Promise.all(trackingPromises),
+                    new Promise(resolve => setTimeout(resolve, 2000))
+                ]).then(() => {
+                    console.log('[TikTok] All server-side tracking complete, redirecting...');
+                    window.location.href = finalRedirectUrl;
+                });
+            });
+            btn.dataset.trackingAttached = 'true';
+        }
+    
+        // --- C. UI STEP SWITCHING ---
+        if(btn.dataset.ready !== 'true') {
+          cards.forEach((c) => {
+            c.addEventListener('click', () => {
+              if (step1) step1.style.display = 'none';
+              if (step2) {
+                step2.classList.remove('hidden');
+                step2.style.display = 'flex';
+              }
+              window.scrollTo(0, 0);
+            });
+          });
+          btn.dataset.ready = 'true';
+        }
+      }
+    
+      // Run system
+      initNav();
+      document.addEventListener('DOMContentLoaded', initNav);
+    
+    })();
+    </script>
 
-  h1{
-    font-size:28px;
-    font-weight:900;
-    line-height:1.2;
-    margin-bottom:12px;
-    background: linear-gradient(135deg, var(--text), var(--brand));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  .subtitle{
-    font-size:16px;
-    color:var(--muted);
-    line-height:1.5;
-    margin-bottom:16px;
-    padding:0 10px;
-  }
-
-  .tiktok-image{
-    width:100%;
-    max-width:320px;
-    height:auto;
-    display:block;
-    margin:-20px auto 40px;
-    border-radius:16px;
-  }
-
-  /* Container */
-  .container{
-    max-width:540px;
-    margin:0 auto;
-    padding:0 20px 40px;
-  }
-
-  /* Section titles */
-  .section-title{
-    font-size:22px;
-    font-weight:800;
-    text-align:center;
-    margin-bottom:24px;
-    color:var(--text);
-  }
-
-  /* Method cards */
-  .methods{
-    display:grid;
-    gap:16px;
-    margin-bottom:48px;
-  }
-
-  .method-card{
-    background:linear-gradient(145deg,#0e1a28 0%, #0c1218 100%);
-    border:1px solid var(--line);
-    border-radius:20px;
-    padding:24px 20px;
-    display:flex;
-    gap:16px;
-    align-items:flex-start;
-    box-shadow:0 8px 24px rgba(0,0,0,.3), 0 0 0 1px rgba(0,255,136,.05);
-    transition: all 0.3s ease;
-  }
-  
-  .method-card:active{
-    transform: scale(0.98);
-  }
-
-  .method-icon{
-    font-size:40px;
-    flex-shrink:0;
-    filter: drop-shadow(0 0 8px var(--brandGlow));
-  }
-
-  .method-content h3{
-    font-size:17px;
-    font-weight:700;
-    color:var(--text);
-    margin-bottom:6px;
-  }
-
-  .method-content p{
-    font-size:14px;
-    color:var(--muted);
-    line-height:1.5;
-  }
-
-  /* Steps */
-  .steps{
-    margin-bottom:48px;
-  }
-
-  .step{
-    display:flex;
-    gap:16px;
-    margin-bottom:24px;
-    align-items:flex-start;
-  }
-
-  .step-num{
-    width:48px;
-    height:48px;
-    background:linear-gradient(135deg,var(--brand),var(--brand2));
-    border-radius:50%;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size:20px;
-    font-weight:900;
-    color:#0a2318;
-    flex-shrink:0;
-    box-shadow:0 4px 16px var(--brandGlow);
-  }
-
-  .step-content h3{
-    font-size:16px;
-    font-weight:700;
-    color:var(--text);
-    margin-bottom:4px;
-  }
-
-  .step-content p{
-    font-size:14px;
-    color:var(--muted);
-    line-height:1.5;
-  }
-
-  /* Earnings box */
-  .earnings{
-    background:linear-gradient(145deg,#0e1a28 0%, #0c1218 100%);
-    border:1px solid var(--line);
-    border-radius:20px;
-    padding:24px 20px;
-    margin-bottom:48px;
-    box-shadow:0 8px 24px rgba(0,0,0,.3);
-  }
-
-  .earnings-title{
-    font-size:18px;
-    font-weight:700;
-    text-align:center;
-    margin-bottom:20px;
-    color:var(--text);
-  }
-
-  .earnings-row{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    padding:14px 0;
-    border-bottom:1px dashed var(--line);
-  }
-  .earnings-row:last-child{
-    border-bottom:none;
-  }
-
-  .earnings-label{
-    font-size:15px;
-    color:var(--muted);
-  }
-
-  .earnings-value{
-    font-size:20px;
-    font-weight:800;
-    color:var(--brand);
-    text-shadow:0 0 12px var(--brandGlow);
-  }
-
-  /* Bonus offer */
-  .bonus{
-    background:linear-gradient(135deg, #1a0f0a 0%, #0f1419 100%);
-    border:2px solid var(--accent);
-    border-radius:20px;
-    padding:24px 20px;
-    margin-bottom:32px;
-    position:relative;
-    box-shadow: 0 0 30px rgba(255,107,53,.2);
-  }
-
-  .bonus::before{
-    content:'🔥 LIMITED TIME';
-    position:absolute;
-    top:-1px;
-    right:20px;
-    background:var(--accent);
-    color:#fff;
-    font-size:10px;
-    font-weight:800;
-    padding:4px 12px;
-    border-radius:0 0 8px 8px;
-    letter-spacing:.5px;
-  }
-
-  .bonus-title{
-    font-size:18px;
-    font-weight:800;
-    color:var(--text);
-    margin-bottom:12px;
-  }
-
-  .bonus-text{
-    font-size:15px;
-    color:var(--muted);
-    line-height:1.6;
-  }
-
-  .bonus-text b{
-    color:var(--brand);
-  }
-
-  /* CTA Button */
-  .cta{
-    display:block;
-    background:linear-gradient(135deg,var(--brand) 0%,var(--brand2) 100%);
-    color:#0a2318;
-    font-weight:900;
-    font-size:18px;
-    text-align:center;
-    padding:20px;
-    border-radius:16px;
-    text-decoration:none;
-    text-transform:uppercase;
-    letter-spacing:.5px;
-    box-shadow:0 12px 32px var(--brandGlow), 0 4px 12px rgba(0,0,0,.3);
-    position:relative;
-    overflow:hidden;
-    margin-bottom:16px;
-    cursor:pointer;
-  }
-
-  .cta::before{
-    content:'';
-    position:absolute;
-    top:0;
-    left:-100%;
-    width:100%;
-    height:100%;
-    background:linear-gradient(90deg, transparent, rgba(255,255,255,.3), transparent);
-    transition:left 0.6s ease;
-  }
-
-  .cta:active{
-    transform: scale(0.98);
-  }
-
-  .cta:active::before{
-    left:100%;
-  }
-
-  .cta-note{
-    display:block;
-    font-size:12px;
-    margin-top:8px;
-    font-weight:600;
-    color:#0a2318;
-  }
-
-  .cta-note .red{
-    color:#ff2d47;
-    font-weight:800;
-  }
-
-  /* Footer */
-  .footer{
-    text-align:center;
-    padding:20px;
-    font-size:12px;
-    color:var(--muted);
-    line-height:1.6;
-  }
-
-  /* Toast notifications */
-  .toast{
-    position:fixed;
-    top:20px;
-    left:50%;
-    transform:translateX(-50%) translateY(-60px);
-    width:calc(100% - 32px);
-    max-width:400px;
-    background:linear-gradient(135deg, #0e1a28, #0a0f14);
-    border:1px solid #2a4058;
-    border-radius:12px;
-    padding:14px 16px;
-    display:flex;
-    align-items:center;
-    gap:12px;
-    box-shadow:0 8px 24px rgba(0,0,0,.6);
-    opacity:0;
-    transition:all .5s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index:1000;
-  }
-
-  .toast.show{
-    opacity:1;
-    transform:translateX(-50%) translateY(0);
-  }
-
-  .toast-icon{
-    font-size:24px;
-    flex-shrink:0;
-  }
-
-  .toast-text{
-    flex:1;
-    font-size:13px;
-    line-height:1.4;
-  }
-
-  .toast-amount{
-    color:var(--brand);
-    font-weight:800;
-  }
-
-  .toast-time{
-    font-size:11px;
-    color:var(--muted);
-    display:block;
-    margin-top:2px;
-  }
-
-  /* Pulse animation */
-  @keyframes pulse {
-    0%, 100% { box-shadow:0 12px 32px var(--brandGlow), 0 4px 12px rgba(0,0,0,.3); }
-    50% { box-shadow:0 16px 40px var(--brandGlow), 0 6px 16px rgba(0,0,0,.4); }
-  }
-  .cta{
-    animation: pulse 3s ease-in-out infinite;
-  }
-
-  /* Tablet adjustments */
-  @media (min-width: 600px){
-    h1{font-size:32px;}
-    .hero{padding:100px 40px 60px;}
-    .container{padding:0 40px 60px;}
-  }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Freecash</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* STYLES */
+    :root { --bg-color-dark: #0B0C10; --bg-color-light: #1e293b; --primary-text: #FFFFFF; --secondary-text: #a0a0b0; --Income-purple: #8B5CF6; --Income-pink: #EC4899; --accent-gradient: linear-gradient(90deg, var(--Income-purple), var(--Income-pink)); --card-bg: rgba(26, 27, 35, 0.75); --card-border: #2c2d3a; --font-family: 'Poppins', sans-serif; }
+    * { box-sizing: border-box; margin: 0; padding: 0; transition: all 0.3s ease-in-out; }
+    body { font-family: var(--font-family); background-color: var(--bg-color-dark); background-image: radial-gradient(ellipse at top, var(--bg-color-light), var(--bg-color-dark) 60%); color: var(--primary-text); display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; padding: 40px 20px; }
+    .container { width: 100%; max-width: 680px; text-align: center; }
+    .lander-step { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 25px; animation: fadeIn 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
+    .hidden { display: none; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .progress-container { width: 100%; display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
+    .progress-bar { flex-grow: 1; background-color: var(--card-border); border-radius: 8px; height: 10px; overflow: hidden; }
+    .progress-fill { height: 100%; background: var(--accent-gradient); border-radius: 8px; background-size: 200% 200%; animation: gradient-sheen 3s ease infinite; }
+    @keyframes gradient-sheen { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+    .progress-label { font-size: 13px; font-weight: 500; color: var(--secondary-text); flex-shrink: 0; }
+    .glow-badge { background-color: transparent; color: var(--Income-purple); padding: 8px 20px; border-radius: 30px; font-size: 13px; font-weight: 600; border: 2px solid var(--Income-purple); letter-spacing: 0.8px; box-shadow: 0 0 15px rgba(139, 92, 246, 0.4), inset 0 0 10px rgba(139, 92, 246, 0.2); }
+    .main-headline { font-size: 56px; font-weight: 800; line-height: 1.15; letter-spacing: -2px; margin-top: -10px; text-shadow: 0 2px 20px rgba(0, 0, 0, 0.3); }
+    .main-headline .highlight { background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-fill-color: transparent; }
+    .sub-headline { font-size: 20px; color: var(--secondary-text); margin-top: 10px; margin-bottom: 20px; max-width: 500px; }
+    .stats-bar { width: 100%; display: flex; flex-direction: row; gap: 0; padding: 0; border-radius: 16px; background: linear-gradient(135deg, #1a1b23 0%, #2a2d3a 100%); border: 1px solid rgba(139, 92, 246, 0.2); overflow: hidden; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4); }
+    .stat-item { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 24px 16px; position: relative; background: rgba(255, 255, 255, 0.02); transition: all 0.3s ease; flex: 1; }
+    .stat-item:hover { background: rgba(139, 92, 246, 0.05); }
+    .stat-item:not(:last-child)::after { content: ''; position: absolute; right: 0; top: 20%; bottom: 20%; width: 1px; background: linear-gradient(180deg, transparent, rgba(139, 92, 246, 0.3), transparent); }
+    .stat-icon { width: 32px; height: 32px; background: linear-gradient(135deg, #8B5CF6, #7C3AED); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3); }
+    .stat-icon svg { fill: white !important; width: 18px; height: 18px; }
+    .stat-number { font-size: 20px; font-weight: 700; color: #8B5CF6; margin-bottom: 4px; text-shadow: 0 0 10px rgba(139, 92, 246, 0.3); }
+    .stat-label { font-size: 12px; color: #a0a0b0; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+    .question-title { font-size: 20px; font-weight: 600; color: var(--primary-text); margin-top: 20px; }
+    .device-options { width: 100%; display: flex; flex-direction: column; gap: 20px; margin-top: -5px; }
+    .option-card { position: relative; display: flex; align-items: center; background-color: #1A1B23; padding: 20px 24px; border-radius: 16px; border: 1px solid var(--card-border); cursor: pointer; text-align: left; overflow: hidden; z-index: 1; }
+    .option-card::before { content: ''; position: absolute; top: 0; right: 0; bottom: 0; left: 0; background: var(--accent-gradient); z-index: -1; opacity: 0; transition: opacity 0.3s ease-in-out; }
+    .option-card:hover { transform: translateY(-6px); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); border-color: transparent; }
+    .option-card:hover::before { opacity: 1; }
+    .option-icon { margin-right: 16px; }
+    .option-icon svg { fill: var(--secondary-text); width: 28px; height: 28px; }
+    .option-card:hover .option-icon svg { fill: var(--primary-text); }
+    .option-text h3 { font-size: 18px; font-weight: 600; color: var(--primary-text); }
+    .option-text p { font-size: 14px; color: var(--secondary-text); }
+    .option-arrow { margin-left: auto; }
+    .option-arrow svg { fill: var(--secondary-text); width: 24px; height: 24px; }
+    .option-card:hover .option-arrow svg { fill: var(--primary-text); transform: translateX(5px); }
+    .cta-button { background: var(--accent-gradient); color: var(--bg-color-dark); padding: 18px 40px; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 18px; display: inline-block; margin-top: 20px; border: none; box-shadow: 0 5px 25px rgba(139, 92, 246, 0.4); }
+    .cta-button:hover { transform: scale(1.05); box-shadow: 0 8px 35px rgba(236, 72, 153, 0.5); }
+    .roadmap-card { background-color: #1A1B23; padding: 30px; border-radius: 16px; border: 1px solid var(--card-border); margin-top: 30px; text-align: left; width: 100%; }
+    .roadmap-card h3 { color: var(--primary-text); margin-bottom: 25px; text-align: center; font-size: 20px; }
+    .roadmap-steps { display: flex; flex-direction: column; gap: 20px; }
+    .roadmap-step { display: flex; align-items: center; gap: 20px; }
+    .step-number { width: 36px; height: 36px; background: var(--accent-gradient); color: var(--bg-color-dark); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; flex-shrink: 0; }
+    .step-text .title { font-weight: 600; color: var(--primary-text); margin-bottom: 4px; font-size: 16px; }
+    .step-text .description { font-size: 14px; color: var(--secondary-text); line-height: 1.5; }
+    /* Responsive Design */
+    @media (max-width: 600px) { .main-headline { font-size: 42px; letter-spacing: -1.5px; } .sub-headline { font-size: 18px; } .stats-bar { flex-direction: row; gap: 0; } .stat-item { padding: 20px 12px; flex-direction: column; text-align: center; } .stat-icon { width: 28px; height: 28px; margin-bottom: 8px; } .stat-number { font-size: 16px; margin-bottom: 4px; } .stat-label { font-size: 10px; } }
+  </style>
 </head>
+
 <body>
-  <!-- Toast -->
-  <div class="toast" id="toast">
-    <div class="toast-icon">💰</div>
-    <div class="toast-text" id="toastText"></div>
-  </div>
-
-  <!-- Hero -->
-  <div class="hero">
-    <img class="logo" src="https://i.imgur.com/d4rEH4U.png" alt="Freecash">
-    <h1>Get Paid Watching TikTok</h1>
-    <p class="subtitle">Turn your TikTok scrolling time into real cash. Sign up to Freecash and start earning money watching videos!</p>
-  </div>
-
-  <!-- TikTok Image -->
-  <img class="tiktok-image" src="https://www.docsmaked.shop/images/freecash-tiktok.png" alt="TikTok Earnings">
- <!-- Container -->
   <div class="container">
-<!-- Steps -->
-    <h2 class="section-title">Getting Started is Easy</h2>
-    
-    <div class="steps">
-      <div class="step">
-        <div class="step-num">1</div>
-        <div class="step-content">
-          <h3>Sign up to Freecash</h3>
-          <p>Takes 30 seconds. Use Google or Facebook.</p>
+    <!-- Step 1: Device Selection -->
+    <div id="step1" class="lander-step">
+      <div class="progress-container">
+        <div class="progress-bar">
+          <div class="progress-fill" style="width: 50%;"></div>
+        </div>
+        <span class="progress-label">Step 1 of 2</span>
+      </div>
+
+      <div class="glow-badge">Freecash EXCLUSIVE</div>
+
+      <h1 class="main-headline">Get Paid to <span class="highlight">Scroll</span></h1>
+      <p class="sub-headline">Earn up to $3,000 per offer by testing apps, games & completing surveys. Instant cashouts available!</p>
+
+
+      <div class="stats-bar">
+        <div class="stat-item">
+          <div class="stat-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24">
+              <path fill="currentColor" d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
+            </svg>
+          </div>
+          <div class="stat-number">500K+</div>
+          <div class="stat-label">Active Users</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24">
+              <path fill="currentColor" d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.75-2.7 1.75-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c2.17-.46 3.5-1.66 3.5-3.66 0-2.52-2.38-3.47-5.2-4.14z" />
+            </svg>
+          </div>
+          <div class="stat-number">$500</div>
+          <div class="stat-label">Per Day</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24">
+              <path fill="currentColor" d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z" />
+            </svg>
+          </div>
+          <div class="stat-number">Instant</div>
+          <div class="stat-label">Payments</div>
         </div>
       </div>
 
-      <div class="step">
-        <div class="step-num">2</div>
-        <div class="step-content">
-          <h3>Watch TikTok videos</h3>
-          <p>Browse TikTok while earning. The more you watch, the more you earn.</p>
-        </div>
-      </div>
+      <h2 class="question-title">What type of phone do you use?</h2>
 
-      <div class="step">
-        <div class="step-num">3</div>
-        <div class="step-content">
-          <h3>Cash out your earnings</h3>
-          <p>Minimum $5 • PayPal, gift cards & more available.</p>
+      <div class="device-options">
+        <div class="option-card" data-phone="iphone">
+          <div class="option-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+              <path fill="currentColor" d="M341.601,0H170.397c-29.29,0-53.12,23.828-53.12,53.121v405.758c0,29.29,23.83,53.121,53.12,53.121h171.204c29.292,0,53.121-23.832,53.121-53.117V53.121C394.722,23.828,370.893,0,341.601,0z M255.999,480.622c-11.869,0-21.526-9.658-21.526-21.526c0-11.871,9.656-21.526,21.526-21.526c11.869,0,21.526,9.655,21.526,21.526C277.525,470.964,267.868,480.622,255.999,480.622z M363.274,67.271v340.156h-214.55V67.271H363.274z" />
+            </svg>
+          </div>
+          <div class="option-text">
+            <h3>iPhone</h3>
+            <p>Perfect for Freecash - highest payouts for Apple users!</p>
+          </div>
+          <div class="option-arrow">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+              <path fill="currentColor" d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z" />
+            </svg>
+          </div>
+        </div>
+
+        <div class="option-card" data-phone="android">
+          <div class="option-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+              <path fill="currentColor" d="M270.1 741.7c0 23.4 19.1 42.5 42.6 42.5h48.7v120.4c0 30.5 24.5 55.4 54.6 55.4 30.2 0 54.6-24.8 54.6-55.4V784.1h85v120.4c0 30.5 24.5 55.4 54.6 55.4 30.2 0 54.6-24.8 54.6-55.4V784.1h48.7c23.5 0 42.6-19.1 42.6-42.5V346.4h-486v395.3zm357.1-600.1l44.9-65c2.6-3.8 2-8.9-1.5-11.4-3.5-2.4-8.5-1.2-11.1 2.6l-46.6 67.6c-30.7-12.1-64.9-18.8-100.8-18.8-35.9 0-70.1 6.7-100.8 18.8l-46.6-67.5c-2.6-3.8-7.6-5.1-11.1-2.6-3.5 2.4-4.1 7.4-1.5 11.4l44.9 65c-71.4 33.2-121.4 96.1-127.8 169.6h486c-6.6-73.6-56.7-136.5-128-169.7zM409.5 244.1a26.9 26.9 0 1 1 26.9-26.9 26.97 26.97 0 0 1-26.9 26.9zm208.4 0a26.9 26.9 0 1 1 26.9-26.9 26.97 26.97 0 0 1-26.9 26.9zm223.4 100.7c-30.2 0-54.6 24.8-54.6 55.4v216.4c0 30.5 24.5 55.4 54.6 55.4 30.2 0 54.6-24.8 54.6-55.4V400.1c.1-30.6-24.3-55.3-54.6-55.3zm-658.6 0c-30.2 0-54.6 24.8-54.6 55.4v216.4c0 30.5 24.5 55.4 54.6 55.4 30.2 0 54.6-24.8 54.6-55.4V400.1c0-30.6-24.5-55.3-54.6-55.3z" />
+            </svg>
+          </div>
+          <div class="option-text">
+            <h3>Android</h3>
+            <p>Works with all Android devices - start earning instantly!</p>
+          </div>
+          <div class="option-arrow">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+              <path fill="currentColor" d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z" />
+            </svg>
+          </div>
         </div>
       </div>
     </div>
-  <!-- CTA -->
-    <a href="https://fb.track-conv.shop/click" class="cta" onclick="handleClick(event)">
-      🚀 Start Earning Watching TikTok
-      <span class="cta-note">⚠️ Must be <span class="red">21+</span> to receive payments</span>
-    </a>
-<br>
-    <br>
 
-    
-
-    <!-- Methods -->
-    <h2 class="section-title">How to Make Money Watching TikTok</h2>
-    
-    <div class="methods">
-      <div class="method-card">
-        <div class="method-icon">📱</div>
-        <div class="method-content">
-          <h3>Watch TikTok Videos</h3>
-          <p>Scroll through your favorite TikTok content and get paid for your time.</p>
+    <!-- Step 2: Success Page -->
+    <div id="step2" class="lander-step hidden">
+      <div class="progress-container">
+        <div class="progress-bar">
+          <div class="progress-fill" style="width: 100%;"></div>
         </div>
+        <span class="progress-label">Step 2 of 2</span>
       </div>
 
-      <div class="method-card">
-        <div class="method-icon">🎮</div>
-        <div class="method-content">
-          <h3>Play Games While Watching</h3>
-          <p>Combine gaming offers with video watching to maximize your earnings.</p>
+      <div class="glow-badge">READY TO EARN!</div>
+
+      <h1 class="main-headline">Start Earning With <span class="highlight">Freecash</span></h1>
+      <p class="sub-headline">Your device is perfect for Freecash! Complete registration to start testing apps, games & surveys with instant cashouts.</p>
+
+      <!-- S2 DEFAULT TO STATIC_LOAD to catch blocked users -->
+      <a href="https://montrk2.co.uk/?a=25754&c=54115&s1=temp5&s2=static_load" class="cta-button">
+        START EARNING NOW
+      </a>
+
+      <div class="roadmap-card">
+        <h3>Your Freecash Earning Journey</h3>
+
+        <div class="roadmap-steps">
+          <div class="roadmap-step">
+            <div class="step-number">1</div>
+            <div class="step-text">
+              <div class="title">Join Freecash</div>
+              <div class="description">Register your account to access thousands of high-paying offers.</div>
+            </div>
+          </div>
+
+          <div class="roadmap-step">
+            <div class="step-number">2</div>
+            <div class="step-text">
+              <div class="title">Get Paid to Scroll</div>
+              <div class="description">Simply scroll through content you already love and watch your earnings grow. Make $500 a day from home!</div>
+            </div>
+          </div>
+
+          <div class="roadmap-step">
+            <div class="step-number">3</div>
+            <div class="step-text">
+              <div class="title">Instant Payments</div>
+              <div class="description">Withdraw your earnings instantly via PayPal, crypto, gift cards, and more payment options.</div>
+            </div>
+          </div>
         </div>
       </div>
-
-      <div class="method-card">
-        <div class="method-icon">📋</div>
-        <div class="method-content">
-          <h3>Complete Quick Surveys</h3>
-          <p>Boost your earnings with paid surveys between TikTok sessions.</p>
-        </div>
-      </div>
-
-      <div class="method-card">
-        <div class="method-icon">💻</div>
-        <div class="method-content">
-          <h3>Watch on Any Device</h3>
-          <p>Earn on TV, iOS, Android, or tablet. Watch anywhere, anytime.</p>
-        </div>
-      </div>
-    </div>
-  
-
-    <!-- Bonus -->
-    <div class="bonus">
-      <div class="bonus-title">🎯 First Day Bonus!</div>
-      <p class="bonus-text">Sign up now and watch TikTok videos for <b>just 1 hour</b> in your first 24 hours to unlock up to a <b>$300 Cash Bonus!</b></p>
-      <p class="bonus-text" style="margin-top:12px;font-size:13px;">💡 Most new users earn $100+ in their first day by combining TikTok watching with gaming offers and surveys.</p>
-    </div>
-
-    <!-- CTA -->
-    <a href="https://fb.track-conv.shop/click" class="cta" onclick="handleClick(event)">
-      💰 Start Making Money Now
-      <span class="cta-note">⚠️ Must be <span class="red">21+</span> to receive payments</span>
-    </a>
-
-    <!-- Footer -->
-    <div class="footer">
-      ⚡ Join 847,000+ users earning money watching TikTok daily<br>
-      Minimum $5 cashout • Multiple payout options
     </div>
   </div>
 
-<script>
-  // Handle click function with TikTok tracking
-  function handleClick(event) {
-    event.preventDefault();
-    console.log('🚀 Button clicked! Starting tracking...');
-    
-    // Client-side TikTok tracking with content_id
-    try {
-      ttq.track('ClickButton', {
-        content_type: 'product',
-        content_id: 'freecash-tiktok-rewards',
-        value: 1.00,
-        currency: 'USD'
-      });
-      ttq.track('AddToCart', {
-        content_type: 'product',
-        content_id: 'freecash-tiktok-rewards',
-        value: 1.00,
-        currency: 'USD'
-      });
-      ttq.track('InitiateCheckout', {
-        content_type: 'product',
-        content_id: 'freecash-tiktok-rewards',
-        value: 1.00,
-        currency: 'USD'
-      });
-      ttq.track('CompleteRegistration', {
-        content_type: 'product',
-        content_id: 'freecash-tiktok-rewards',
-        value: 1.00,
-        currency: 'USD'
-      });
-      ttq.track('Purchase', {
-        content_type: 'product',
-        content_id: 'freecash-tiktok-rewards',
-        value: 1.00,
-        currency: 'USD'
-      });
-      ttq.track('SubmitForm', {
-        content_type: 'product',
-        content_id: 'freecash-tiktok-rewards',
-        value: 1.00,
-        currency: 'USD'
-      });
-      console.log('✅ TikTok tracking events fired successfully');
-    } catch (e) {
-      console.warn('⚠️ TikTok tracking failed:', e);
-    }
+  <!-- Title editing script -->
+  <script>
+    document.title = `Freecash`;
+  </script>
 
-    // Small delay to ensure events are sent before redirect
-    setTimeout(() => {
-      console.log('🔄 Redirecting to offer page...');
-      window.location.href = 'https://fb.track-conv.shop/click';
-    }, 500);
-  }
+  <!-- JUNK CODE SECTION - This will be replaced with unique code on each rotation -->
+  
+  <!-- Junk Code Section - Generated: 2025-11-22T06:30:00.854Z -->
+  <script>
+    (function() {
+      var _qy3a9zb724 = 'b23b53c9';
+      var _a998p0dvfdg = 118073;
+      var _temp118073 = function() {
+        return _qy3a9zb724 + _a998p0dvfdg + 'pb7fczzw0z';
+      };
+      window._junk1763793000854 = {
+        id: 'qy3a9zb724',
+        val: 118073,
+        hash: 'b23b53c9',
+        ts: 1763793000854,
+        fn: _temp118073
+      };
+      try {
+        var _dummy = document.createElement('div');
+        _dummy.setAttribute('data-junk', 'qy3a9zb724');
+        _dummy.style.display = 'none';
+        document.body.appendChild(_dummy);
+      } catch(e) {}
+    })();
+  </script>
+  <noscript>
+    <meta name="junk-qy3a9zb724" content="b23b53c9-118073">
+  </noscript>
 
-  const notifications = [
-    { user: "Jessica", amount: "$73", action: "earned watching", time: "8 min ago" },
-    { user: "Marcus", amount: "$156", action: "made from TikTok", time: "15 min ago" },
-    { user: "Sarah", amount: "$91", action: "cashed out", time: "3 min ago" },
-    { user: "Alex", amount: "$67", action: "earned scrolling", time: "22 min ago" },
-    { user: "Emma", amount: "$203", action: "made watching", time: "12 min ago" },
-    { user: "David", amount: "$134", action: "earned from videos", time: "28 min ago" }
-  ];
-
-  let index = 0;
-  let showing = false;
-
-  function showToast(){
-    if(showing) return;
-    showing = true;
-
-    const toast = document.getElementById('toast');
-    const textEl = document.getElementById('toastText');
-    const n = notifications[index];
-
-    textEl.innerHTML = `<strong>${n.user}</strong> ${n.action} <span class="toast-amount">${n.amount}</span><span class="toast-time">${n.time}</span>`;
-
-    toast.classList.add('show');
-
-    setTimeout(() => {
-      toast.classList.remove('show');
-      setTimeout(() => {
-        showing = false;
-        index = (index + 1) % notifications.length;
-        setTimeout(showToast, 2000 + Math.random() * 2000);
-      }, 500);
-    }, 3500);
-  }
-
-  setTimeout(showToast, 1500);
-</script>
+  <!-- SHOPIFY CONTENT HOOK (Required for saving, but hidden from view) -->
  
 </body>
+
 </html>
