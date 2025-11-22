@@ -1,0 +1,32 @@
+app = "fly-io-yttjag"
+primary_region = "iad"
+
+[build]
+  builder = "heroku/buildpacks:20"
+
+[env]
+  PORT = "8080"
+
+[[services]]
+  internal_port = 8080
+  protocol = "tcp"
+
+  [[services.ports]]
+    handlers = ["http"]
+    port = 80
+
+  [[services.ports]]
+    handlers = ["tls", "http"]
+    port = 443
+
+  [services.concurrency]
+    type = "requests"
+    soft_limit = 20
+    hard_limit = 40
+
+  [[services.http_checks]]
+    interval = "10s"
+    timeout = "2s"
+    path = "/"
+    method = "get"
+    protocol = "http"
