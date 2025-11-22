@@ -1,23 +1,12 @@
-# fly.toml app configuration file generated for fly-io-yttjag on 2025-11-22T06:30:06Z
-#
-# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
-#
-
-app = 'fly-io-yttjag'
-primary_region = 'lax'
+# fly.toml - ajuste app name depois do primeiro deploy ou via `fly launch`
+app = "my-fly-rotator-app" 
+primary_region = "iad"
 
 [build]
+  image = "fly-io-placeholder" # pode ficar vazio inicialmente se usar fly launch
 
-[http_service]
-  internal_port = 8080
-  force_https = true
-  auto_stop_machines = 'stop'
-  auto_start_machines = true
-  min_machines_running = 0
-  processes = ['app']
+[env]
+  PORT = "8080"
 
-[[vm]]
-  memory = '1gb'
-  cpu_kind = 'shared'
-  cpus = 1
-  memory_mb = 2048
+[experimental]
+  allowed_public_ports = []
