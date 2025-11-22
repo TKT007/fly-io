@@ -91,3 +91,14 @@ app.get('*', (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
 });
+
+// rota original que o usuário acessa
+app.get('/freecash', (req, res) => {
+  // gera slug
+  const timestamp = Date.now();
+  const randomStr = crypto.randomBytes(3).toString('hex').slice(0, 6);
+  const slug = `lander-${timestamp}-${randomStr}.html`;
+
+  // redireciona para a slug gerada
+  res.redirect(`/${slug}`);
+});
