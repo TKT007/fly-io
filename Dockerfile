@@ -1,17 +1,18 @@
-# Dockerfile
-FROM node:18-alpine
+# Use imagem oficial Node.js
+FROM node:18
 
+# Define diretório de trabalho
 WORKDIR /app
 
-# install dependencies first (layer caching)
-COPY package.json package-lock.json* ./
+# Copia package.json e instala dependências
+COPY package*.json ./
+RUN npm install --only=production
 
-RUN npm install --production
-
-# copy app
+# Copia o resto do código
 COPY . .
 
+# Expõe a porta usada pelo app
 EXPOSE 8080
-ENV PORT=8080
 
-CMD ["npm", "start"]
+# Comando que inicia o servidor
+CMD ["node", "server.js"]
