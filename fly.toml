@@ -2,7 +2,7 @@ app = "fly-io-yttjag"
 primary_region = "iad"
 
 [build]
-  builder = "heroku/buildpacks:20"
+  builder = "paketobuildpacks/builder-jammy-base"
 
 [env]
   PORT = "8080"
