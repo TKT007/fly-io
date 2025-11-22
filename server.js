@@ -57,42 +57,67 @@ function buildJunkBlock() {
   return script;
 }
 
-// Serve static files if needed
-app.use(express.static(path.join(__dirname)));
+// ------------------------
+// Helper: generate slug
+// ------------------------
+function genSlug() {
+  const timestamp = Date.now();
+  const randomStr = crypto.randomBytes(3).toString('hex').slice(0, 6);
+  return `lander-${timestamp}-${randomStr}.html`;
+}
 
+// Middleware: simple request logger (useful em produção para debug)
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`);
+  next();
+});
 
 // ---------------------------------------------------------------
-// 1) /freecash → gera SEMPRE uma slug nova
+// 1) /freecash → gera SEMPRE uma slug nova e redirect
 // ---------------------------------------------------------------
 app.get('/freecash', (req, res) => {
-  const timestamp = Date.now();
-  const randomStr = crypto.randomBytes(3).toString('hex').slice(0, 6);
-  const slug = `lander-${timestamp}-${randomStr}.html`;
-  res.redirect(`/${slug}`);
+  const slug = genSlug();
+  // prevenir cache do redirect
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+  console.log(`Redirecting /freecash -> /${slug}`);
+  return res.redirect(302, `/${slug}`);
 });
 
-
 // ---------------------------------------------------------------
-// 2) Lander NUNCA serve HTML — gera sempre outra slug nova
-//    Assim qualquer refresh troca a URL automaticamente
+// 2) ROTA DINÂMICA (regex) — qualquer /lander-<ts>-<rand>.html
+//    esta rota NÃO serve HTML; ela sempre gera outro slug e redireciona
+//    isso garante que F5 sempre mude a URL
 // ---------------------------------------------------------------
-app.get('/lander-:ts-:rand.html', (req, res) => {
-  const timestamp = Date.now();
-  const randomStr = crypto.randomBytes(3).toString('hex').slice(0, 6);
-  const newSlug = `lander-${timestamp}-${randomStr}.html`;
-
-  res.redirect(`/${newSlug}`);
+app.get(/^\/lander-\d+-[a-f0-9]{1,}\.html$/i, (req, res) => {
+  const newSlug = genSlug();
+  // prevenir cache do redirect
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+  console.log(`Redirecting ${req.originalUrl} -> /${newSlug}`);
+  return res.redirect(302, `/${newSlug}`);
 });
 
+// ---------------------------------------------------------------
+// Serve static files (se houver) - colocado DEPOIS das rotas dinâmicas
+// para garantir que rotas dinâmicas tenham prioridade sobre arquivos estáticos.
+// ---------------------------------------------------------------
+app.use(express.static(path.join(__dirname), {
+  index: false,
+  // explicit: don't let static set caching that interferes
+  setHeaders: (res, path) => {
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+  }
+}));
 
 // ---------------------------------------------------------------
-// 3) Catch-all — aqui sim entrega o HTML final com junk inject
+// 3) Catch-all — entrega o HTML final com junk inject
+//    e também define headers para evitar cache.
 // ---------------------------------------------------------------
 app.get('*', (req, res) => {
   let html;
   try {
     html = fs.readFileSync(HTML_FILE, 'utf8');
   } catch (err) {
+    console.error('HTML read error', err);
     return res.status(500).send('HTML not found');
   }
 
@@ -104,10 +129,11 @@ app.get('*', (req, res) => {
     html = html.replace('</body>', `${junk}\n</body>`);
   }
 
+  // evitar cache do HTML final
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
   res.set('X-Build-Id', crypto.randomBytes(4).toString('hex'));
   res.send(html);
 });
-
 
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
