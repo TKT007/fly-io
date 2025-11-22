@@ -62,45 +62,31 @@ app.use(express.static(path.join(__dirname)));
 
 
 // ---------------------------------------------------------------
-// 1) ROTA PRINCIPAL — acesse /freecash → gera slug aleatória
+// 1) /freecash → gera SEMPRE uma slug nova
 // ---------------------------------------------------------------
 app.get('/freecash', (req, res) => {
   const timestamp = Date.now();
   const randomStr = crypto.randomBytes(3).toString('hex').slice(0, 6);
   const slug = `lander-${timestamp}-${randomStr}.html`;
-
   res.redirect(`/${slug}`);
 });
 
 
 // ---------------------------------------------------------------
-// 2) ROTA DINÂMICA — serve páginas do tipo /lander-xxxxx-xxxx.html
+// 2) Lander NUNCA serve HTML — gera sempre outra slug nova
+//    Assim qualquer refresh troca a URL automaticamente
 // ---------------------------------------------------------------
 app.get('/lander-:ts-:rand.html', (req, res) => {
-  let html;
-  try {
-    html = fs.readFileSync(HTML_FILE, 'utf8');
-  } catch (err) {
-    return res.status(500).send('HTML not found');
-  }
+  const timestamp = Date.now();
+  const randomStr = crypto.randomBytes(3).toString('hex').slice(0, 6);
+  const newSlug = `lander-${timestamp}-${randomStr}.html`;
 
-  const junk = buildJunkBlock();
-  
-  if (html.includes('<!-- JUNK_INJECT -->')) {
-    html = html.replace('<!-- JUNK_INJECT -->', junk);
-  } else {
-    html = html.replace('</body>', `${junk}\n</body>`);
-  }
-
-  res.set('X-Lander-Timestamp', req.params.ts);
-  res.set('X-Lander-Random', req.params.rand);
-
-  res.send(html);
+  res.redirect(`/${newSlug}`);
 });
 
 
 // ---------------------------------------------------------------
-// 3) CATCH-ALL — ÚLTIMA ROTA (FICA SEMPRE NO FINAL)
+// 3) Catch-all — aqui sim entrega o HTML final com junk inject
 // ---------------------------------------------------------------
 app.get('*', (req, res) => {
   let html;
