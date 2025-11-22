@@ -1,12 +1,17 @@
+# Dockerfile
 FROM node:18-alpine
 
 WORKDIR /app
 
-COPY package*.json ./
-RUN npm install
+# install dependencies first (layer caching)
+COPY package.json package-lock.json* ./
 
+RUN npm install --production
+
+# copy app
 COPY . .
 
 EXPOSE 8080
+ENV PORT=8080
 
 CMD ["npm", "start"]
