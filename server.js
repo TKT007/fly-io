@@ -24,8 +24,6 @@ function buildJunkBlock() {
   const hiddenAttr = `data-junk-${randIdent(4)}`;
   const windowProp = `window.${varName}`;
 
-  // A small script that creates a hidden element, a global var and a function.
-  // It's intentionally harmless — just metadata + tiny function.
   const script = `
 <script>
 (function(){
@@ -37,19 +35,18 @@ function buildJunkBlock() {
       ts: ${ts},
       rnd: ${rndNum}
     };
-    // expose to window
     ${windowProp} = meta;
-    // create a tiny hidden node so the DOM differs each request
+
     var d = document.createElement('div');
     d.setAttribute('${hiddenAttr}', meta.id + '-' + meta.rnd);
     d.style.display = 'none';
-    // add a small randomized function name
+
     var fnName = 'fn_' + Math.random().toString(36).substring(2, 10);
     window[fnName] = function() { return meta; };
+
     d.appendChild(document.createTextNode(fnName));
     document.body.appendChild(d);
   } catch(e) {
-    // swallow: non-critical
     console && console.log && console.log('junk inject error', e);
   }
 })();
@@ -60,45 +57,72 @@ function buildJunkBlock() {
   return script;
 }
 
-// Serve static assets if you add any
+// Serve static files if needed
 app.use(express.static(path.join(__dirname)));
 
-app.get('*', (req, res) => {
-  // read base HTML (synchronous is fine for small demo)
-  let html;
-  try {
-    html = fs.readFileSync(HTML_FILE, 'utf8');
-  } catch (err) {
-    res.status(500).send('HTML not found');
-    return;
-  }
 
-  // Build the junk block and insert before closing </body>
-  const junk = buildJunkBlock();
-  if (html.includes('<!-- JUNK_INJECT -->')) {
-    html = html.replace('<!-- JUNK_INJECT -->', junk);
-  } else {
-    // fallback: insert before </body>
-    html = html.replace('</body>', `${junk}\n</body>`);
-  }
-
-  // Add a server-side header with a build id (helpful for debugging)
-  res.set('X-Build-Id', crypto.randomBytes(4).toString('hex'));
-
-  res.send(html);
-});
-
-app.listen(PORT, () => {
-  console.log(`Server listening on port ${PORT}`);
-});
-
-// rota original que o usuário acessa
+// ---------------------------------------------------------------
+// 1) ROTA PRINCIPAL — acesse /freecash → gera slug aleatória
+// ---------------------------------------------------------------
 app.get('/freecash', (req, res) => {
-  // gera slug
   const timestamp = Date.now();
   const randomStr = crypto.randomBytes(3).toString('hex').slice(0, 6);
   const slug = `lander-${timestamp}-${randomStr}.html`;
 
-  // redireciona para a slug gerada
   res.redirect(`/${slug}`);
+});
+
+
+// ---------------------------------------------------------------
+// 2) ROTA DINÂMICA — serve páginas do tipo /lander-xxxxx-xxxx.html
+// ---------------------------------------------------------------
+app.get('/lander-:ts-:rand.html', (req, res) => {
+  let html;
+  try {
+    html = fs.readFileSync(HTML_FILE, 'utf8');
+  } catch (err) {
+    return res.status(500).send('HTML not found');
+  }
+
+  const junk = buildJunkBlock();
+  
+  if (html.includes('<!-- JUNK_INJECT -->')) {
+    html = html.replace('<!-- JUNK_INJECT -->', junk);
+  } else {
+    html = html.replace('</body>', `${junk}\n</body>`);
+  }
+
+  res.set('X-Lander-Timestamp', req.params.ts);
+  res.set('X-Lander-Random', req.params.rand);
+
+  res.send(html);
+});
+
+
+// ---------------------------------------------------------------
+// 3) CATCH-ALL — ÚLTIMA ROTA (FICA SEMPRE NO FINAL)
+// ---------------------------------------------------------------
+app.get('*', (req, res) => {
+  let html;
+  try {
+    html = fs.readFileSync(HTML_FILE, 'utf8');
+  } catch (err) {
+    return res.status(500).send('HTML not found');
+  }
+
+  const junk = buildJunkBlock();
+
+  if (html.includes('<!-- JUNK_INJECT -->')) {
+    html = html.replace('<!-- JUNK_INJECT -->', junk);
+  } else {
+    html = html.replace('</body>', `${junk}\n</body>`);
+  }
+
+  res.set('X-Build-Id', crypto.randomBytes(4).toString('hex'));
+  res.send(html);
+});
+
+
+app.listen(PORT, () => {
+  console.log(`Server listening on port ${PORT}`);
 });
