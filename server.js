@@ -9,12 +9,11 @@ const app = express();
 const PORT = process.env.PORT || 8080;
 const HTML_FILE = path.join(__dirname, 'freecash.html');
 
-// Helper to generate random JS identifier-like strings
+// Helpers -----------------------------------------------------
 function randIdent(len = 8) {
   return crypto.randomBytes(len).toString('hex').slice(0, len);
 }
 
-// Build the "junk" block to be injected into HTML
 function buildJunkBlock() {
   const varName = '_' + randIdent(6);
   const ts = Date.now();
@@ -24,11 +23,10 @@ function buildJunkBlock() {
   const hiddenAttr = `data-junk-${randIdent(4)}`;
   const windowProp = `window.${varName}`;
 
-  const script = `
+  return `
 <script>
 (function(){
   try {
-    var name = "${varName}";
     var meta = {
       id: "${shortHash}",
       uuid: "${uuid}",
@@ -46,78 +44,38 @@ function buildJunkBlock() {
 
     d.appendChild(document.createTextNode(fnName));
     document.body.appendChild(d);
-  } catch(e) {
-    console && console.log && console.log('junk inject error', e);
-  }
+  } catch(e){}
 })();
 </script>
 <noscript><meta name="junk-${shortHash}" content="${shortHash}-${rndNum}"></noscript>
 `;
-
-  return script;
 }
 
-// ------------------------
-// Helper: generate slug
-// ------------------------
 function genSlug() {
   const timestamp = Date.now();
   const randomStr = crypto.randomBytes(3).toString('hex').slice(0, 6);
   return `lander-${timestamp}-${randomStr}.html`;
 }
 
-// Middleware: simple request logger (useful em produção para debug)
-app.use((req, res, next) => {
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`);
-  next();
-});
-
 // ---------------------------------------------------------------
-// 1) /freecash → gera SEMPRE uma slug nova e redirect
+// /freecash → GERA SLUG NOVA UMA ÚNICA VEZ
 // ---------------------------------------------------------------
 app.get('/freecash', (req, res) => {
   const slug = genSlug();
-  // prevenir cache do redirect
-  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
-  console.log(`Redirecting /freecash -> /${slug}`);
-  return res.redirect(302, `/${slug}`);
+  res.set('Cache-Control', 'no-store');
+  console.log(`[freecash] -> redirect to /${slug}`);
+  res.redirect(`/${slug}`);
 });
 
 // ---------------------------------------------------------------
-// 2) ROTA DINÂMICA (regex) — qualquer /lander-<ts>-<rand>.html
-//    esta rota NÃO serve HTML; ela sempre gera outro slug e redireciona
-//    isso garante que F5 sempre mude a URL
+// /lander-*.html → SERVE HTML (NÃO REDIRECIONA!)
 // ---------------------------------------------------------------
-app.get(/^\/lander-\d+-[a-f0-9]{1,}\.html$/i, (req, res) => {
-  const newSlug = genSlug();
-  // prevenir cache do redirect
-  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
-  console.log(`Redirecting ${req.originalUrl} -> /${newSlug}`);
-  return res.redirect(302, `/${newSlug}`);
-});
-
-// ---------------------------------------------------------------
-// Serve static files (se houver) - colocado DEPOIS das rotas dinâmicas
-// para garantir que rotas dinâmicas tenham prioridade sobre arquivos estáticos.
-// ---------------------------------------------------------------
-app.use(express.static(path.join(__dirname), {
-  index: false,
-  // explicit: don't let static set caching that interferes
-  setHeaders: (res, path) => {
-    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
-  }
-}));
-
-// ---------------------------------------------------------------
-// 3) Catch-all — entrega o HTML final com junk inject
-//    e também define headers para evitar cache.
-// ---------------------------------------------------------------
-app.get('*', (req, res) => {
+app.get(/^\/lander-\d+-[a-f0-9]+\.html$/i, (req, res) => {
   let html;
+
   try {
     html = fs.readFileSync(HTML_FILE, 'utf8');
   } catch (err) {
-    console.error('HTML read error', err);
     return res.status(500).send('HTML not found');
   }
 
@@ -126,13 +84,23 @@ app.get('*', (req, res) => {
   if (html.includes('<!-- JUNK_INJECT -->')) {
     html = html.replace('<!-- JUNK_INJECT -->', junk);
   } else {
-    html = html.replace('</body>', `${junk}\n</body>`);
+    html = html.replace('</body>', `${junk}</body>`);
   }
 
-  // evitar cache do HTML final
-  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
-  res.set('X-Build-Id', crypto.randomBytes(4).toString('hex'));
+  // impede cache (mantém slug, mas conteúdo muda)
+  res.set('Cache-Control', 'no-store');
+
   res.send(html);
+});
+
+// ---------------------------------------------------------------
+// Static files — depois das rotas dinâmicas
+// ---------------------------------------------------------------
+app.use(express.static(path.join(__dirname), { index: false }));
+
+// Catch-all opcional
+app.get('*', (req, res) => {
+  res.status(404).send('Not found');
 });
 
 app.listen(PORT, () => {
