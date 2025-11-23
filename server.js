@@ -7,7 +7,7 @@ const { v4: uuidv4 } = require('uuid');
 
 const app = express();
 const PORT = process.env.PORT || 8080;
-const HTML_FILE = path.join(__dirname, 'freecash.html');
+const HTML_FILE = path.join(__dirname, 'freecash-tiktok.html');
 
 // ---------------------------------------------
 // Helper que gera nomes aleatórios
